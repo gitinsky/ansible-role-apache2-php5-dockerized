@@ -1,0 +1,28 @@
+---
+- name: make a build dir
+  file: state=directory name=/root/apache2-php5-dockerized
+
+- name: put Dockerfile
+  template: src=Dockerfile dest=/root/apache2-php5-dockerized/Dockerfile
+
+- name: put apache2.rb
+  template: src=apache2.rb dest=/root/apache2-php5-dockerized/apache2.rb
+
+- name: put mpm_prefork.conf
+  template: src=mpm_prefork.conf dest=/root/apache2-php5-dockerized/mpm_prefork.conf
+
+- name: build a Docker image for Apache2 and PHP5
+  command: docker build -t gitinsky/apache2-php5:0.1.0 --rm /root/apache2-php5-dockerized
+
+- name: check if a container is started
+  command: bash -c "docker ps | grep {{ container_name }}"
+  ignore_errors: True
+  register: result
+
+- name: chown content volume
+  command: chown -R {{ apache_uid }}:{{ apache_gid }} {{ ext_apache2_volume }}
+  when: result|failed
+
+- name: start a container
+  command: docker run -d -name {{ container_name }} --link mysql:db -p=80:80 -v {{ ext_apache2_volume }}:/var/www/html gitinsky/apache2-php5:0.1.0
+  when: result|failed
