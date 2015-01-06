@@ -11,8 +11,11 @@
 - name: put mpm_prefork.conf
   template: src=mpm_prefork.conf dest=/root/apache2-php5-dockerized/mpm_prefork.conf
 
+- name: put 000-default.conf
+  template: src=000-default.conf dest=/root/apache2-php5-dockerized/000-default.conf
+
 - name: build a Docker image for Apache2 and PHP5
-  command: docker build -t gitinsky/apache2-php5:0.1.0 --rm /root/apache2-php5-dockerized
+  command: docker build -t gitinsky/apache2-php5:0.1.2 --rm /root/apache2-php5-dockerized
 
 - name: check if a container is started
   command: bash -c "docker ps | grep {{ container_name }}"
@@ -24,5 +27,5 @@
   when: result|failed
 
 - name: start a container
-  command: docker run -d -name {{ container_name }} --link mysql:db -v {{ ext_apache2_volume }}:/var/www/html gitinsky/apache2-php5:0.1.0
+  command: docker run -d -name {{ container_name }} --link mysql:db -v {{ ext_apache2_volume }}:/var/www/html gitinsky/apache2-php5:0.1.2
   when: result|failed
